@@ -25,6 +25,7 @@ model Hogar {
   usuarios     Usuario[]
   recetas      Receta[]
   ingredientes Ingrediente[]
+  despensa     DespensaItem[]
 }
 
 model Usuario {
@@ -50,6 +51,7 @@ model Ingrediente {
   hogar      Hogar?  @relation(fields: [hogarId], references: [id], onDelete: Cascade)
 
   recetaIngredientes RecetaIngrediente[]
+  despensaItems      DespensaItem[]
 
   @@unique([nombre, hogarId])
 }
@@ -82,4 +84,22 @@ model RecetaIngrediente {
   unidad        String
 
   @@unique([recetaId, ingredienteId])
+}
+
+// Despensa/heladera de un hogar. cantidadObjetivo = "lo básico que siempre
+// debería haber" (baseline definido por el hogar); cantidadActual = stock
+// real, que se puede ajustar a mano o descuenta solo al "cocinar" una
+// receta. Ambas se guardan siempre en unidadBase del ingrediente para no
+// tener que reconciliar unidades distintas entre sí.
+model DespensaItem {
+  id               String      @id @default(cuid())
+  hogarId          String
+  hogar            Hogar       @relation(fields: [hogarId], references: [id], onDelete: Cascade)
+  ingredienteId    String
+  ingrediente      Ingrediente @relation(fields: [ingredienteId], references: [id])
+  cantidadObjetivo Float       @default(0)
+  cantidadActual   Float       @default(0)
+  updatedAt        DateTime    @updatedAt
+
+  @@unique([hogarId, ingredienteId])
 }

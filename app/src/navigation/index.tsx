@@ -13,6 +13,7 @@ import RecetaFormScreen from "../screens/RecetaFormScreen";
 import ImportarRecetaScreen from "../screens/ImportarRecetaScreen";
 import ListaComprasScreen from "../screens/ListaComprasScreen";
 import SugerenciasScreen from "../screens/SugerenciasScreen";
+import DespensaScreen from "../screens/DespensaScreen";
 
 export type AuthStackParamList = {
   Login: undefined;
@@ -30,6 +31,7 @@ export type MainTabParamList = {
   RecetarioTab: undefined;
   ListaComprasTab: undefined;
   SugerenciasTab: undefined;
+  DespensaTab: undefined;
 };
 
 const AuthStack = createNativeStackNavigator<AuthStackParamList>();
@@ -80,6 +82,11 @@ function MainNavigator() {
         name="SugerenciasTab"
         component={SugerenciasScreen}
         options={{ title: "Qué cocino", headerShown: true }}
+      />
+      <Tab.Screen
+        name="DespensaTab"
+        component={DespensaScreen}
+        options={{ title: "Despensa", headerShown: true }}
       />
     </Tab.Navigator>
   );

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Alert } from "react-native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { api } from "../api/client";
-import { Receta } from "../api/tipos";
+import { Receta, ResultadoCocinar } from "../api/tipos";
 import type { RecetarioStackParamList } from "../navigation";
 
 type Props = NativeStackScreenProps<RecetarioStackParamList, "RecetaDetalle">;
@@ -10,10 +10,36 @@ type Props = NativeStackScreenProps<RecetarioStackParamList, "RecetaDetalle">;
 export default function RecetaDetalleScreen({ route, navigation }: Props) {
   const { recetaId } = route.params;
   const [receta, setReceta] = useState<Receta | null>(null);
+  const [cocinando, setCocinando] = useState(false);
 
   useEffect(() => {
     api<{ receta: Receta }>(`/recetas/${recetaId}`).then((d) => setReceta(d.receta));
   }, [recetaId]);
+
+  async function cocinar() {
+    setCocinando(true);
+    try {
+      const datos = await api<ResultadoCocinar>(`/recetas/${recetaId}/cocinar`, {
+        method: "POST",
+        body: {},
+      });
+      const descontados = datos.ingredientes.filter((i) => i.descontado).map((i) => i.nombre);
+      const sinTrackear = datos.ingredientes.filter((i) => !i.descontado).map((i) => i.nombre);
+      Alert.alert(
+        "Receta cocinada",
+        [
+          descontados.length
+            ? `Se descontó de tu despensa: ${descontados.join(", ")}.`
+            : "Ningún ingrediente de esta receta está trackeado en tu despensa.",
+          sinTrackear.length ? `No trackeados: ${sinTrackear.join(", ")}.` : "",
+        ]
+          .filter(Boolean)
+          .join("\n")
+      );
+    } finally {
+      setCocinando(false);
+    }
+  }
 
   async function eliminar() {
     Alert.alert("Eliminar receta", "¿Seguro que querés borrarla?", [
@@ -49,6 +75,16 @@ export default function RecetaDetalleScreen({ route, navigation }: Props) {
       <Text style={styles.seccion}>Preparación</Text>
       <Text style={styles.pasos}>{receta.pasos || "Sin pasos cargados."}</Text>
 
+      <TouchableOpacity
+        style={[styles.boton, styles.botonCocinar]}
+        onPress={cocinar}
+        disabled={cocinando}
+      >
+        <Text style={styles.botonTexto}>
+          {cocinando ? "Cocinando..." : "Cocinar (descontar de despensa)"}
+        </Text>
+      </TouchableOpacity>
+
       <View style={styles.acciones}>
         <TouchableOpacity
           style={styles.boton}
@@ -81,5 +117,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   botonBorrar: { backgroundColor: "#c0392b" },
+  botonCocinar: { marginTop: 28, backgroundColor: "#15803d" },
   botonTexto: { color: "#fff", fontWeight: "600" },
 });

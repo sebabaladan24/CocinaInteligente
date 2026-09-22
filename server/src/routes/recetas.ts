@@ -4,6 +4,7 @@ import { db } from "../lib/db";
 import { requireAuth, RequestConSesion } from "../lib/auth";
 import { obtenerOCrearIngrediente } from "../lib/ingredientes";
 import { importarRecetaDesdeUrl } from "../lib/importarUrl";
+import { aCantidadBase } from "../lib/unidades";
 import type { OrigenReceta } from "../lib/tipos";
 
 export const recetasRouter = Router();
@@ -153,6 +154,54 @@ recetasRouter.delete("/:id", async (req: RequestConSesion, res) => {
 
   await db.receta.delete({ where: { id: existente.id } });
   res.status(204).send();
+});
+
+const cocinarSchema = z.object({
+  porcionesDeseadas: z.number().int().positive().optional(),
+});
+
+// Marca una receta como cocinada: descuenta de la despensa (si el hogar
+// trackea ese ingrediente puntual) la cantidad usada. Es opcional por
+// diseño — un ingrediente que el hogar no cargó en su despensa simplemente
+// se ignora, no se crea de la nada.
+recetasRouter.post("/:id/cocinar", async (req: RequestConSesion, res) => {
+  const receta = await requireRecetaDelHogar(req.params.id, req.sesion!.hogarId);
+  if (!receta) return res.status(404).json({ error: "Receta no encontrada" });
+
+  const parsed = cocinarSchema.safeParse(req.body ?? {});
+  if (!parsed.success) return res.status(400).json({ error: parsed.error.flatten() });
+
+  const hogarId = req.sesion!.hogarId;
+  const factor = parsed.data.porcionesDeseadas
+    ? parsed.data.porcionesDeseadas / receta.porciones
+    : 1;
+
+  const completa = await db.receta.findUniqueOrThrow({
+    where: { id: receta.id },
+    include: { ingredientes: { include: { ingrediente: true } } },
+  });
+
+  const resultado = [];
+  for (const ri of completa.ingredientes) {
+    const despensaItem = await db.despensaItem.findUnique({
+      where: { hogarId_ingredienteId: { hogarId, ingredienteId: ri.ingredienteId } },
+    });
+
+    if (!despensaItem) {
+      resultado.push({ nombre: ri.ingrediente.nombre, descontado: false });
+      continue;
+    }
+
+    const { cantidadBase } = aCantidadBase(ri.cantidad * factor, ri.unidad);
+    const nuevaCantidad = Math.max(0, despensaItem.cantidadActual - cantidadBase);
+    await db.despensaItem.update({
+      where: { id: despensaItem.id },
+      data: { cantidadActual: nuevaCantidad },
+    });
+    resultado.push({ nombre: ri.ingrediente.nombre, descontado: true });
+  }
+
+  res.json({ ingredientes: resultado });
 });
 
 const importarSchema = z.object({

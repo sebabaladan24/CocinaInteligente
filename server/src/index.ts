@@ -5,6 +5,7 @@ import { authRouter } from "./routes/auth";
 import { recetasRouter } from "./routes/recetas";
 import { listaCompraRouter } from "./routes/listaCompra";
 import { sugerenciasRouter } from "./routes/sugerencias";
+import { despensaRouter } from "./routes/despensa";
 
 const app = express();
 
@@ -17,6 +18,7 @@ app.use("/auth", authRouter);
 app.use("/recetas", recetasRouter);
 app.use("/lista-compras", listaCompraRouter);
 app.use("/sugerencias", sugerenciasRouter);
+app.use("/despensa", despensaRouter);
 
 const port = process.env.PORT ? Number(process.env.PORT) : 3001;
 app.listen(port, () => {

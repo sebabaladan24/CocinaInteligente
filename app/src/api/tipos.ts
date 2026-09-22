@@ -58,3 +58,17 @@ export type ItemListaCompra = {
   cantidad: number;
   unidad: string;
 };
+
+export type CantidadFormateada = { cantidad: number; unidad: string };
+
+export type DespensaItem = {
+  id: string;
+  ingredienteId: string;
+  nombre: string;
+  objetivo: CantidadFormateada;
+  actual: CantidadFormateada;
+};
+
+export type ResultadoCocinar = {
+  ingredientes: { nombre: string; descontado: boolean }[];
+};
