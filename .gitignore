@@ -1,0 +1,16 @@
+node_modules/
+.env
+*.log
+
+# server
+server/prisma/dev.db
+server/prisma/dev.db-journal
+server/dist/
+
+# expo
+app/.expo/
+app/dist/
+app/web-build/
+app/node_modules/
+
+.DS_Store

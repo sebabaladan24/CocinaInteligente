@@ -1,0 +1,13 @@
+{
+  "name": "cocinainteligente",
+  "private": true,
+  "workspaces": [
+    "server",
+    "app"
+  ],
+  "scripts": {
+    "server:dev": "npm run dev --workspace server",
+    "server:db:push": "npm run db:push --workspace server",
+    "app:start": "npm run start --workspace app"
+  }
+}

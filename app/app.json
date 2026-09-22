@@ -1,0 +1,22 @@
+{
+  "expo": {
+    "name": "CocinaInteligente",
+    "slug": "cocinainteligente",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.cocinainteligente.app"
+    },
+    "android": {
+      "package": "com.cocinainteligente.app"
+    },
+    "web": {
+      "bundler": "metro"
+    }
+  }
+}

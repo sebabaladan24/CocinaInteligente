@@ -1,0 +1,85 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// SQLite no soporta enums nativos en Prisma: los campos de abajo marcados
+// "String (enum de app)" se validan como unión de literales en el código
+// TypeScript (ver server/src/lib/tipos.ts), no a nivel de base.
+//
+// RolUsuario: "ADMIN" | "MIEMBRO"
+// TipoUnidad: "MASA" | "VOLUMEN" | "UNIDAD"
+// OrigenReceta: "MANUAL" | "IMPORTADA_JSON" | "IMPORTADA_URL"
+
+// Un Hogar agrupa usuarios y datos (recetario, ingredientes propios).
+// Pensado como "tenant": hoy es una familia, mañana podría ser una cuenta comercial.
+model Hogar {
+  id        String   @id @default(cuid())
+  nombre    String
+  createdAt DateTime @default(now())
+
+  usuarios     Usuario[]
+  recetas      Receta[]
+  ingredientes Ingrediente[]
+}
+
+model Usuario {
+  id           String   @id @default(cuid())
+  hogarId      String
+  hogar        Hogar    @relation(fields: [hogarId], references: [id], onDelete: Cascade)
+  nombre       String
+  email        String   @unique
+  passwordHash String
+  rol          String   @default("MIEMBRO") // String (enum de app): RolUsuario
+  createdAt    DateTime @default(now())
+}
+
+// Catálogo de ingredientes. hogarId null = catálogo global (sembrado o
+// creado por cualquier hogar al importar recetas); hogarId seteado = un
+// ingrediente que un hogar definió puntualmente para sí mismo.
+model Ingrediente {
+  id         String  @id @default(cuid())
+  nombre     String
+  unidadBase String
+  tipoUnidad String // String (enum de app): TipoUnidad
+  hogarId    String?
+  hogar      Hogar?  @relation(fields: [hogarId], references: [id], onDelete: Cascade)
+
+  recetaIngredientes RecetaIngrediente[]
+
+  @@unique([nombre, hogarId])
+}
+
+model Receta {
+  id          String   @id @default(cuid())
+  hogarId     String
+  hogar       Hogar    @relation(fields: [hogarId], references: [id], onDelete: Cascade)
+  nombre      String
+  descripcion String?
+  pasos       String
+  tiempoMin   Int?
+  porciones   Int      @default(1)
+  fotoUrl     String?
+  origen      String   @default("MANUAL") // String (enum de app): OrigenReceta
+  urlOrigen   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  ingredientes RecetaIngrediente[]
+}
+
+model RecetaIngrediente {
+  id            String      @id @default(cuid())
+  recetaId      String
+  receta        Receta      @relation(fields: [recetaId], references: [id], onDelete: Cascade)
+  ingredienteId String
+  ingrediente   Ingrediente @relation(fields: [ingredienteId], references: [id])
+  cantidad      Float
+  unidad        String
+
+  @@unique([recetaId, ingredienteId])
+}
