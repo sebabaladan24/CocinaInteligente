@@ -72,3 +72,14 @@ export type DespensaItem = {
 export type ResultadoCocinar = {
   ingredientes: { nombre: string; descontado: boolean }[];
 };
+
+export type MensajeChat = {
+  rol: "user" | "assistant";
+  contenido: string;
+};
+
+export type ResultadoBusquedaWeb = {
+  titulo: string;
+  url: string;
+  descripcion: string;
+};

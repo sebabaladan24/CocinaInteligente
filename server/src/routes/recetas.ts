@@ -4,6 +4,7 @@ import { db } from "../lib/db";
 import { requireAuth, RequestConSesion } from "../lib/auth";
 import { obtenerOCrearIngrediente } from "../lib/ingredientes";
 import { importarRecetaDesdeUrl } from "../lib/importarUrl";
+import { buscarRecetasEnWeb } from "../lib/busquedaWeb";
 import { aCantidadBase } from "../lib/unidades";
 import type { OrigenReceta } from "../lib/tipos";
 
@@ -242,5 +243,23 @@ recetasRouter.post("/importar-url", async (req: RequestConSesion, res) => {
     res.status(422).json({
       error: err instanceof Error ? err.message : "No se pudo importar la receta",
     });
+  }
+});
+
+const buscarWebSchema = z.object({ query: z.string().min(1) });
+
+// Busca candidatos en la web por tema (no una URL puntual); el cliente
+// elige uno de los resultados y lo importa con POST /recetas/importar-url.
+recetasRouter.post("/buscar-web", async (req: RequestConSesion, res) => {
+  const parsed = buscarWebSchema.safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ error: parsed.error.flatten() });
+
+  try {
+    const resultados = await buscarRecetasEnWeb(parsed.data.query);
+    res.json({ resultados });
+  } catch (err) {
+    const mensaje = err instanceof Error ? err.message : "No se pudo buscar en la web";
+    const esFaltaConfig = mensaje.includes("BRAVE_API_KEY");
+    res.status(esFaltaConfig ? 503 : 502).json({ error: mensaje });
   }
 });

@@ -7,27 +7,37 @@ import {
   StyleSheet,
   ActivityIndicator,
   ScrollView,
+  FlatList,
 } from "react-native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { api } from "../api/client";
+import { ResultadoBusquedaWeb } from "../api/tipos";
 import type { RecetarioStackParamList } from "../navigation";
 
 type Props = NativeStackScreenProps<RecetarioStackParamList, "ImportarReceta">;
 
-type Modo = "url" | "json";
+type Modo = "url" | "json" | "buscar";
 
 export default function ImportarRecetaScreen({ navigation }: Props) {
   const [modo, setModo] = useState<Modo>("url");
   const [url, setUrl] = useState("");
   const [json, setJson] = useState("");
+  const [query, setQuery] = useState("");
+  const [resultados, setResultados] = useState<ResultadoBusquedaWeb[] | null>(null);
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  async function importarPorUrl() {
+  function cambiarModo(nuevo: Modo) {
+    setModo(nuevo);
+    setError(null);
+    setResultados(null);
+  }
+
+  async function importarUrl(urlAImportar: string) {
     setError(null);
     setCargando(true);
     try {
-      await api("/recetas/importar-url", { method: "POST", body: { url: url.trim() } });
+      await api("/recetas/importar-url", { method: "POST", body: { url: urlAImportar.trim() } });
       navigation.goBack();
     } catch (err) {
       setError(err instanceof Error ? err.message : "No se pudo importar");
@@ -57,28 +67,50 @@ export default function ImportarRecetaScreen({ navigation }: Props) {
     }
   }
 
+  async function buscar() {
+    if (!query.trim()) return;
+    setError(null);
+    setResultados(null);
+    setCargando(true);
+    try {
+      const datos = await api<{ resultados: ResultadoBusquedaWeb[] }>("/recetas/buscar-web", {
+        method: "POST",
+        body: { query: query.trim() },
+      });
+      setResultados(datos.resultados);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "No se pudo buscar");
+    } finally {
+      setCargando(false);
+    }
+  }
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.tabs}>
         <TouchableOpacity
           style={[styles.tab, modo === "url" && styles.tabActivo]}
-          onPress={() => setModo("url")}
+          onPress={() => cambiarModo("url")}
         >
-          <Text style={modo === "url" ? styles.tabTextoActivo : styles.tabTexto}>
-            Desde una URL
+          <Text style={modo === "url" ? styles.tabTextoActivo : styles.tabTexto}>URL</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.tab, modo === "buscar" && styles.tabActivo]}
+          onPress={() => cambiarModo("buscar")}
+        >
+          <Text style={modo === "buscar" ? styles.tabTextoActivo : styles.tabTexto}>
+            Buscar en la web
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.tab, modo === "json" && styles.tabActivo]}
-          onPress={() => setModo("json")}
+          onPress={() => cambiarModo("json")}
         >
-          <Text style={modo === "json" ? styles.tabTextoActivo : styles.tabTexto}>
-            Pegar JSON
-          </Text>
+          <Text style={modo === "json" ? styles.tabTextoActivo : styles.tabTexto}>JSON</Text>
         </TouchableOpacity>
       </View>
 
-      {modo === "url" ? (
+      {modo === "url" && (
         <>
           <Text style={styles.ayuda}>
             Pegá el link de una receta de cualquier sitio de cocina. Vamos a intentar leer sus
@@ -93,11 +125,70 @@ export default function ImportarRecetaScreen({ navigation }: Props) {
             onChangeText={setUrl}
           />
           {error && <Text style={styles.error}>{error}</Text>}
-          <TouchableOpacity style={styles.boton} onPress={importarPorUrl} disabled={cargando}>
-            {cargando ? <ActivityIndicator color="#fff" /> : <Text style={styles.botonTexto}>Importar</Text>}
+          <TouchableOpacity
+            style={styles.boton}
+            onPress={() => importarUrl(url)}
+            disabled={cargando}
+          >
+            {cargando ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.botonTexto}>Importar</Text>
+            )}
           </TouchableOpacity>
         </>
-      ) : (
+      )}
+
+      {modo === "buscar" && (
+        <>
+          <Text style={styles.ayuda}>
+            Describí qué querés cocinar (ej. "tarta de jamón y queso") y elegí uno de los
+            resultados para importarlo.
+          </Text>
+          <View style={styles.filaBusqueda}>
+            <TextInput
+              style={[styles.input, { flex: 1 }]}
+              placeholder="Qué querés cocinar..."
+              value={query}
+              onChangeText={setQuery}
+              onSubmitEditing={buscar}
+            />
+            <TouchableOpacity style={styles.botonBuscar} onPress={buscar} disabled={cargando}>
+              <Text style={styles.botonTexto}>Buscar</Text>
+            </TouchableOpacity>
+          </View>
+
+          {cargando && <ActivityIndicator style={{ marginTop: 16 }} />}
+          {error && <Text style={styles.error}>{error}</Text>}
+
+          {resultados && (
+            <FlatList
+              data={resultados}
+              keyExtractor={(r) => r.url}
+              style={{ marginTop: 12 }}
+              ListEmptyComponent={
+                <Text style={styles.vacio}>No encontramos nada para esa búsqueda.</Text>
+              }
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={styles.resultadoCard}
+                  onPress={() => importarUrl(item.url)}
+                  disabled={cargando}
+                >
+                  <Text style={styles.resultadoTitulo}>{item.titulo}</Text>
+                  {!!item.descripcion && (
+                    <Text style={styles.resultadoDescripcion} numberOfLines={2}>
+                      {item.descripcion}
+                    </Text>
+                  )}
+                </TouchableOpacity>
+              )}
+            />
+          )}
+        </>
+      )}
+
+      {modo === "json" && (
         <>
           <Text style={styles.ayuda}>
             Pegá un JSON con una receta o una lista de recetas (por ejemplo, uno que hayas armado
@@ -113,7 +204,11 @@ export default function ImportarRecetaScreen({ navigation }: Props) {
           />
           {error && <Text style={styles.error}>{error}</Text>}
           <TouchableOpacity style={styles.boton} onPress={importarPorJson} disabled={cargando}>
-            {cargando ? <ActivityIndicator color="#fff" /> : <Text style={styles.botonTexto}>Importar</Text>}
+            {cargando ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.botonTexto}>Importar</Text>
+            )}
           </TouchableOpacity>
         </>
       )}
@@ -126,8 +221,8 @@ const styles = StyleSheet.create({
   tabs: { flexDirection: "row", marginBottom: 16, backgroundColor: "#f2f2f2", borderRadius: 8 },
   tab: { flex: 1, padding: 10, alignItems: "center", borderRadius: 8 },
   tabActivo: { backgroundColor: "#ea580c" },
-  tabTexto: { color: "#555" },
-  tabTextoActivo: { color: "#fff", fontWeight: "600" },
+  tabTexto: { color: "#555", fontSize: 12 },
+  tabTextoActivo: { color: "#fff", fontWeight: "600", fontSize: 12 },
   ayuda: { color: "#666", fontSize: 13, marginBottom: 12, lineHeight: 18 },
   input: { borderWidth: 1, borderColor: "#ddd", borderRadius: 8, padding: 12 },
   textarea: { minHeight: 180, textAlignVertical: "top" },
@@ -140,4 +235,21 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   botonTexto: { color: "#fff", fontWeight: "600" },
+  filaBusqueda: { flexDirection: "row", gap: 8 },
+  botonBuscar: {
+    backgroundColor: "#ea580c",
+    borderRadius: 8,
+    paddingHorizontal: 16,
+    justifyContent: "center",
+  },
+  vacio: { color: "#888", textAlign: "center", marginTop: 20 },
+  resultadoCard: {
+    borderWidth: 1,
+    borderColor: "#eee",
+    borderRadius: 10,
+    padding: 12,
+    marginBottom: 8,
+  },
+  resultadoTitulo: { fontWeight: "600" },
+  resultadoDescripcion: { fontSize: 12, color: "#888", marginTop: 4 },
 });
