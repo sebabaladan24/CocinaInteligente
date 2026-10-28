@@ -18,7 +18,7 @@ import { useAuth } from "../context/AuthContext";
 type Props = NativeStackScreenProps<RecetarioStackParamList, "RecetarioLista">;
 
 export default function RecetarioScreen({ navigation }: Props) {
-  const { logout, hogar } = useAuth();
+  const { logout, hogar, usuario } = useAuth();
   const [recetas, setRecetas] = useState<Receta[]>([]);
   const [cargando, setCargando] = useState(true);
   const [refrescando, setRefrescando] = useState(false);
@@ -45,9 +45,19 @@ export default function RecetarioScreen({ navigation }: Props) {
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.hogarNombre}>{hogar?.nombre}</Text>
-        <TouchableOpacity onPress={logout}>
-          <Text style={styles.salir}>Salir</Text>
-        </TouchableOpacity>
+        <View style={styles.headerAcciones}>
+          {usuario?.rol === "ADMIN" && (
+            <TouchableOpacity onPress={() => navigation.navigate("Miembros")}>
+              <Text style={styles.headerLink}>Miembros</Text>
+            </TouchableOpacity>
+          )}
+          <TouchableOpacity onPress={() => navigation.navigate("Cuenta")}>
+            <Text style={styles.headerLink}>Mi cuenta</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={logout}>
+            <Text style={styles.salir}>Salir</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       <View style={styles.acciones}>
@@ -107,6 +117,8 @@ const styles = StyleSheet.create({
     paddingTop: 12,
   },
   hogarNombre: { fontSize: 16, fontWeight: "600" },
+  headerAcciones: { flexDirection: "row", gap: 14, alignItems: "center" },
+  headerLink: { color: "#555", fontSize: 13 },
   salir: { color: "#ea580c" },
   acciones: { flexDirection: "row", gap: 8, paddingHorizontal: 16, paddingTop: 12 },
   botonAccion: {

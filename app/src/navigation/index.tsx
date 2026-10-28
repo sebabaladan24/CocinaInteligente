@@ -7,10 +7,14 @@ import { useAuth } from "../context/AuthContext";
 
 import LoginScreen from "../screens/LoginScreen";
 import RegistroScreen from "../screens/RegistroScreen";
+import OlvidePasswordScreen from "../screens/OlvidePasswordScreen";
+import AceptarInvitacionScreen from "../screens/AceptarInvitacionScreen";
 import RecetarioScreen from "../screens/RecetarioScreen";
 import RecetaDetalleScreen from "../screens/RecetaDetalleScreen";
 import RecetaFormScreen from "../screens/RecetaFormScreen";
 import ImportarRecetaScreen from "../screens/ImportarRecetaScreen";
+import CuentaScreen from "../screens/CuentaScreen";
+import MiembrosScreen from "../screens/MiembrosScreen";
 import ListaComprasScreen from "../screens/ListaComprasScreen";
 import SugerenciasScreen from "../screens/SugerenciasScreen";
 import DespensaScreen from "../screens/DespensaScreen";
@@ -19,6 +23,8 @@ import AsistenteScreen from "../screens/AsistenteScreen";
 export type AuthStackParamList = {
   Login: undefined;
   Registro: undefined;
+  OlvidePassword: undefined;
+  AceptarInvitacion: undefined;
 };
 
 export type RecetarioStackParamList = {
@@ -26,6 +32,8 @@ export type RecetarioStackParamList = {
   RecetaDetalle: { recetaId: string };
   RecetaForm: { recetaId?: string };
   ImportarReceta: undefined;
+  Cuenta: undefined;
+  Miembros: undefined;
 };
 
 export type MainTabParamList = {
@@ -62,6 +70,12 @@ function RecetarioNavigator() {
         name="ImportarReceta"
         component={ImportarRecetaScreen}
         options={{ title: "Importar receta" }}
+      />
+      <RecetarioStack.Screen name="Cuenta" component={CuentaScreen} options={{ title: "Mi cuenta" }} />
+      <RecetarioStack.Screen
+        name="Miembros"
+        component={MiembrosScreen}
+        options={{ title: "Miembros del hogar" }}
       />
     </RecetarioStack.Navigator>
   );
@@ -104,6 +118,8 @@ function AuthNavigator() {
     <AuthStack.Navigator screenOptions={{ headerShown: false }}>
       <AuthStack.Screen name="Login" component={LoginScreen} />
       <AuthStack.Screen name="Registro" component={RegistroScreen} />
+      <AuthStack.Screen name="OlvidePassword" component={OlvidePasswordScreen} />
+      <AuthStack.Screen name="AceptarInvitacion" component={AceptarInvitacionScreen} />
     </AuthStack.Navigator>
   );
 }

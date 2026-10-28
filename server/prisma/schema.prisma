@@ -37,6 +37,25 @@ model Usuario {
   passwordHash String
   rol          String   @default("MIEMBRO") // String (enum de app): RolUsuario
   createdAt    DateTime @default(now())
+
+  tokensRecuperacion TokenRecuperacion[]
+}
+
+// Código de un solo uso para recuperar contraseña (tipo RECUPERACION) o
+// aceptar una invitación a un hogar (tipo INVITACION). Expira al ras de 1
+// hora. Sin página web intermedia (la app es mobile-only): el código se
+// ingresa a mano en la app, no es un link.
+model TokenRecuperacion {
+  id        String   @id @default(cuid())
+  usuarioId String
+  usuario   Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  codigo    String
+  tipo      String // String (enum de app): "RECUPERACION" | "INVITACION"
+  expiraEn  DateTime
+  usado     Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([usuarioId, tipo])
 }
 
 // Catálogo de ingredientes. hogarId null = catálogo global (sembrado o

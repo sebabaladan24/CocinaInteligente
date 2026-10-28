@@ -66,6 +66,12 @@ export default function LoginScreen({ navigation }: Props) {
       <TouchableOpacity onPress={() => navigation.navigate("Registro")}>
         <Text style={styles.link}>¿Todavía no tenés hogar creado? Registrate</Text>
       </TouchableOpacity>
+      <TouchableOpacity onPress={() => navigation.navigate("OlvidePassword")}>
+        <Text style={styles.link}>¿Olvidaste tu contraseña?</Text>
+      </TouchableOpacity>
+      <TouchableOpacity onPress={() => navigation.navigate("AceptarInvitacion")}>
+        <Text style={styles.link}>Tengo un código de invitación</Text>
+      </TouchableOpacity>
     </View>
   );
 }

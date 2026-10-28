@@ -13,6 +13,12 @@ type AuthState = {
     email: string;
     password: string;
   }) => Promise<void>;
+  confirmarInvitacion: (datos: {
+    email: string;
+    codigo: string;
+    password: string;
+  }) => Promise<void>;
+  actualizarUsuarioLocal: (usuario: Usuario) => void;
   logout: () => Promise<void>;
 };
 
@@ -68,6 +74,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setHogar(datos.hogar);
   }
 
+  async function confirmarInvitacion(datos: { email: string; codigo: string; password: string }) {
+    const resultado = await api<{ token: string; usuario: Usuario }>(
+      "/auth/invitacion/confirmar",
+      { method: "POST", body: datos }
+    );
+    await guardarToken(resultado.token);
+    setUsuario(resultado.usuario);
+    const meDatos = await api<{ hogar: Hogar }>("/auth/me");
+    setHogar(meDatos.hogar);
+  }
+
+  function actualizarUsuarioLocal(nuevoUsuario: Usuario) {
+    setUsuario(nuevoUsuario);
+  }
+
   async function logout() {
     await borrarToken();
     setUsuario(null);
@@ -75,7 +96,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ cargando, usuario, hogar, login, registrar, logout }}>
+    <AuthContext.Provider
+      value={{
+        cargando,
+        usuario,
+        hogar,
+        login,
+        registrar,
+        confirmarInvitacion,
+        actualizarUsuarioLocal,
+        logout,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
