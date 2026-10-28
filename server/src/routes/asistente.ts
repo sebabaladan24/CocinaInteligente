@@ -1,4 +1,4 @@
-import { Router } from "express";
+import { createRouter } from "../lib/router";
 import { z } from "zod";
 import Anthropic from "@anthropic-ai/sdk";
 import { db } from "../lib/db";
@@ -6,7 +6,7 @@ import { requireAuth, RequestConSesion } from "../lib/auth";
 import { obtenerClienteClaude, obtenerModeloClaude } from "../lib/claude";
 import { construirContextoHogar } from "../lib/contextoHogar";
 
-export const asistenteRouter = Router();
+export const asistenteRouter = createRouter();
 asistenteRouter.use(requireAuth);
 
 const mensajeSchema = z.object({

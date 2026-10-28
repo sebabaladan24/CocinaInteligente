@@ -1,4 +1,4 @@
-import { Router } from "express";
+import { createRouter } from "../lib/router";
 import { z } from "zod";
 import { db } from "../lib/db";
 import {
@@ -14,7 +14,7 @@ import { emailConfigurado, enviarEmail } from "../lib/email";
 import { crearTokenRecuperacion, validarYConsumirToken } from "../lib/tokens";
 import crypto from "node:crypto";
 
-export const authRouter = Router();
+export const authRouter = createRouter();
 
 const registroSchema = z.object({
   hogarNombre: z.string().min(1),

@@ -1,4 +1,4 @@
-import { Router } from "express";
+import { createRouter } from "../lib/router";
 import { z } from "zod";
 import { db } from "../lib/db";
 import { requireAuth, RequestConSesion } from "../lib/auth";
@@ -8,7 +8,7 @@ import { buscarRecetasEnWeb } from "../lib/busquedaWeb";
 import { aCantidadBase } from "../lib/unidades";
 import type { OrigenReceta } from "../lib/tipos";
 
-export const recetasRouter = Router();
+export const recetasRouter = createRouter();
 recetasRouter.use(requireAuth);
 
 const ingredienteInputSchema = z.object({

@@ -5,6 +5,7 @@ node_modules/
 # server
 server/prisma/dev.db
 server/prisma/dev.db-journal
+server/prisma/backups/
 server/dist/
 
 # expo

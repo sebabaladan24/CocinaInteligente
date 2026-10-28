@@ -1,10 +1,10 @@
-import { Router } from "express";
+import { createRouter } from "../lib/router";
 import { z } from "zod";
 import { db } from "../lib/db";
 import { requireAuth, RequestConSesion } from "../lib/auth";
 import { aCantidadBase, formatearCantidad } from "../lib/unidades";
 
-export const listaCompraRouter = Router();
+export const listaCompraRouter = createRouter();
 listaCompraRouter.use(requireAuth);
 
 const itemSchema = z.object({

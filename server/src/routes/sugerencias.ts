@@ -1,9 +1,9 @@
-import { Router } from "express";
+import { createRouter } from "../lib/router";
 import { z } from "zod";
 import { db } from "../lib/db";
 import { requireAuth, RequestConSesion } from "../lib/auth";
 
-export const sugerenciasRouter = Router();
+export const sugerenciasRouter = createRouter();
 sugerenciasRouter.use(requireAuth);
 
 const bodySchema = z.object({

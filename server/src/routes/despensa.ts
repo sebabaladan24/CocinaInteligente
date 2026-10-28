@@ -1,11 +1,11 @@
-import { Router } from "express";
+import { createRouter } from "../lib/router";
 import { z } from "zod";
 import { db } from "../lib/db";
 import { requireAuth, RequestConSesion } from "../lib/auth";
 import { obtenerOCrearIngrediente } from "../lib/ingredientes";
 import { aCantidadBase, formatearCantidad } from "../lib/unidades";
 
-export const despensaRouter = Router();
+export const despensaRouter = createRouter();
 despensaRouter.use(requireAuth);
 
 function formatearItem(item: {
