@@ -47,13 +47,20 @@ npm run dev                # http://localhost:3001
 
 ```bash
 cd app
+cp .env.example .env       # y editar EXPO_PUBLIC_API_URL
 npm install
 npm run start              # abre Expo Dev Tools / Expo Go
 ```
 
-Antes de correrla, editá `app/src/api/client.ts` y reemplazá `API_URL` por la
-IP de tu máquina en la red local (con Expo Go, `localhost` apunta al celular,
-no a tu PC) — por ejemplo `http://192.168.0.10:3001`.
+`EXPO_PUBLIC_API_URL` tiene que ser la IP de tu máquina en la red local
+(con Expo Go, `localhost` apunta al celular, no a tu PC) — por ejemplo
+`http://192.168.0.10:3001`.
+
+## Desplegar a producción
+
+Ver [`docs/despliegue.md`](docs/despliegue.md) — backend en Railway con
+volumen persistente, variables de entorno, y backup automático diario vía
+GitHub Actions.
 
 ## Modelo de datos
 

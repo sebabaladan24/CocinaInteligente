@@ -1,9 +1,14 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-// En desarrollo con Expo Go, "localhost" apunta al dispositivo, no a tu PC.
-// Reemplazá esto por la IP de tu máquina en la red local (ej. 192.168.0.10)
-// o por la URL pública del backend una vez desplegado.
-export const API_URL = "http://localhost:3001";
+// Las variables EXPO_PUBLIC_* se inyectan en build time (sin instalar nada
+// nuevo: viene con el SDK de Expo). Configurala en app/.env — ver
+// app/.env.example — en vez de hardcodear la URL acá.
+//
+// En desarrollo con Expo Go, "localhost" apunta al dispositivo, no a tu PC:
+// usá la IP de tu máquina en la red local (ej. http://192.168.0.10:3001).
+// Para un build de producción (EAS), apuntá a la URL pública del backend
+// desplegado (con HTTPS).
+export const API_URL = process.env.EXPO_PUBLIC_API_URL ?? "http://localhost:3001";
 
 const TOKEN_KEY = "cocinainteligente_token";
 
