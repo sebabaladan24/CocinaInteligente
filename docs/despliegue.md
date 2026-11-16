@@ -75,18 +75,16 @@ En `app/.env` (no se commitea, ver `app/.env.example`):
 EXPO_PUBLIC_API_URL="https://<tu-app>.up.railway.app"
 ```
 
-## 6. Backup automático diario (opcional)
+## 6. Backup (manual por ahora)
 
-Ya existe `.github/workflows/backup.yml` en el repo: un workflow de
-GitHub Actions que llama a `POST /cron/backup` todos los días a las 06:00
-UTC. Para activarlo, en el repo de GitHub → **Settings → Secrets and
-variables → Actions** → agregar:
-
-- `BACKEND_URL` = `https://<tu-app>.up.railway.app`
-- `CRON_SECRET` = el mismo valor que pusiste en Railway
-
-Sin estos dos secrets cargados, el workflow corre pero falla (no hace
-nada destructivo, solo no logra autenticarse).
+El endpoint `POST /cron/backup` (protegido con `CRON_SECRET`) y el script
+`npm run db:backup` siguen disponibles — corrés el backup a mano cuando
+quieras. Hubo un workflow de GitHub Actions que lo llamaba automáticamente
+todos los días, pero se quitó porque fallaba a diario (no había
+`BACKEND_URL`/`CRON_SECRET` cargados, al no estar todavía desplegado) y
+mandaba un email de falla por cada corrida. Si en algún momento querés
+automatizarlo de nuevo, armalo recién una vez que el backend esté
+desplegado y esos secrets estén cargados — si no, vuelve a fallar igual.
 
 ## Lo que queda fuera de este documento
 
